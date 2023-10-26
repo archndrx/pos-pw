@@ -20,52 +20,58 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   @override
   Widget build(BuildContext context) {
-    // final cartProvider = Provider.of<CartProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Product'),
         actions: [
-          Consumer<CartProvider>(builder: (context, cartProvider, _) {
-            return IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CartPage(),
-                  ),
-                );
-              },
-              icon: Stack(
-                children: [
-                  const Icon(Icons.shopping_cart),
-                  if (cartProvider.itemCount > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          cartProvider.itemCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CartPage(),
                     ),
-                ],
+                  );
+                },
+                icon: const Icon(Icons.shopping_cart),
               ),
-            );
-          }),
+              Consumer<CartProvider>(builder: (context, cartProvider, _) {
+                return FutureBuilder<int>(
+                  future: cartProvider.getCartItemCount(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator(); // Tampilkan indikator loading jika sedang menunggu
+                    } else if (snapshot.hasData) {
+                      final itemCount = snapshot.data;
+                      return Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            itemCount.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                );
+              }),
+            ],
+          ),
         ],
       ),
       body: Consumer<ProductProvider>(
@@ -106,7 +112,9 @@ class _ProductScreenState extends State<ProductScreen> {
                           children: [
                             Expanded(
                               child: Image.file(
-                                File(productModel.file.toString()),
+                                File(
+                                  productModel.file.toString(),
+                                ),
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                               ),
