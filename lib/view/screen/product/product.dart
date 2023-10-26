@@ -20,17 +20,52 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   @override
   Widget build(BuildContext context) {
+    // final cartProvider = Provider.of<CartProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Product'),
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const CartPage()));
-            },
-            icon: const Icon(Icons.shopping_cart),
-          ),
+          Consumer<CartProvider>(builder: (context, cartProvider, _) {
+            return IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CartPage(),
+                  ),
+                );
+              },
+              icon: Stack(
+                children: [
+                  const Icon(Icons.shopping_cart),
+                  if (cartProvider.itemCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          cartProvider.itemCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
       body: Consumer<ProductProvider>(
@@ -108,14 +143,14 @@ class _ProductScreenState extends State<ProductScreen> {
                                   onTap: () {
                                     Provider.of<CartProvider>(context,
                                             listen: false)
-                                        .addToCart(
-                                            productModel); // Tambahkan produk ke keranjang
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(const SnackBar(
-                                      content: Text(
-                                          'Produk ditambahkan ke keranjang'),
-                                      duration: Duration(seconds: 2),
-                                    ));
+                                        .addToCart(productModel);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Produk ditambahkan ke keranjang'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
                                   },
                                   child: const Icon(Icons.add_shopping_cart),
                                 ),

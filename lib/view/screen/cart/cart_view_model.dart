@@ -4,6 +4,7 @@ import 'package:point_of_sales/model/product_model.dart';
 class CartProvider extends ChangeNotifier {
   final List<ProductModel> _items = [];
 
+  int get itemCount => _items.length;
   List<ProductModel> get items => _items;
 
   void addToCart(ProductModel product) {
