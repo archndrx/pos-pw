@@ -1,6 +1,3 @@
-// ignore_for_file: unused_import
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:point_of_sales/model/product_model.dart';
@@ -126,8 +123,8 @@ class _AddProductState extends State<AddProduct> {
                         price: price,
                         file: file,
                       );
-                      final dataProvider = context.read<ProductProvider>();
-                      dataProvider.addProduct(newData);
+                      final productProvider = context.read<ProductProvider>();
+                      productProvider.addProduct(newData);
                       Navigator.pop(context);
                     }
                   },
