@@ -1,12 +1,11 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:point_of_sales/model/product_model.dart';
 
 class ProductProvider extends ChangeNotifier {
-  final List<ProductModel> _products = [];
-
-  List<ProductModel> get products => _products;
-
   Stream<List<ProductModel>> getProduct() => FirebaseFirestore.instance
       .collection("product")
       .orderBy("name")
