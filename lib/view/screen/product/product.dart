@@ -32,7 +32,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CartPage(),
+                      builder: (context) => const CartPage(),
                     ),
                   );
                 },
@@ -43,7 +43,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   future: cartProvider.getCartItemCount(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(); // Tampilkan indikator loading jika sedang menunggu
+                      return const CircularProgressIndicator(); // Tampilkan indikator loading jika sedang menunggu
                     } else if (snapshot.hasData) {
                       final itemCount = snapshot.data;
                       return Positioned(
@@ -51,13 +51,13 @@ class _ProductScreenState extends State<ProductScreen> {
                         right: 10,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
                           child: Text(
                             itemCount.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                             ),
