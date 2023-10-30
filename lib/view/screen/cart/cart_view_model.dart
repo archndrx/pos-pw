@@ -55,6 +55,33 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> checkout() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final cartReference =
+          FirebaseFirestore.instance.collection('carts').doc(user.uid);
+
+      // Ambil semua item di keranjang
+      final cartItems = await cartReference.collection('items').get();
+      final orderData = {
+        'userId': user.uid,
+        'items': cartItems.docs.map((item) => item.data()).toList(),
+        'totalPrice': calculateTotalPrice(cartItems.docs),
+        'timestamp': FieldValue.serverTimestamp(), // Tambahkan waktu pesanan
+      };
+
+      // Simpan data pesanan ke koleksi 'orders'
+      await FirebaseFirestore.instance.collection('orders').add(orderData);
+
+      // Hapus semua item dari keranjang
+      for (var item in cartItems.docs) {
+        await item.reference.delete();
+      }
+
+      notifyListeners();
+    }
+  }
+
   int calculateTotalPrice(List<DocumentSnapshot> cartItems) {
     int totalHarga = 0;
     for (var item in cartItems) {
