@@ -180,10 +180,10 @@ class _ProductScreenState extends State<ProductScreen> {
                   },
                 );
               } else {
-                return Center(
+                return const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text("Belum ada data"),
                     ],
                   ),
