@@ -55,6 +55,7 @@ class CartPage extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         cartProvider.checkout();
+                        Navigator.pop(context);
                       },
                       child: Text(
                         'Checkout Rp.${NumberFormat.decimalPattern('id_ID').format(cartProvider.calculateTotalPrice(cartItems))}',
