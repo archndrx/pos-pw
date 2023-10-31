@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:point_of_sales/view/screen/history/history.dart';
 import 'package:point_of_sales/view/screen/product/product.dart';
 import 'package:point_of_sales/view/screen/profile/profile.dart';
 import 'package:point_of_sales/view/screen/sales/sales.dart';
@@ -21,7 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List _page = [
     const ProductScreen(),
-    const SalesScreen(),
+    const HistoryPage(),
+    const SalesPage(),
     ProfilePage(),
   ];
 
@@ -30,12 +32,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: _page[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) => _changeTab(index),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Product',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
           ),
           BottomNavigationBarItem(
               icon: Icon(
