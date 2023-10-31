@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:point_of_sales/model/product_model.dart';
+import 'package:point_of_sales/model/sales_model.dart';
 
 class CartProvider extends ChangeNotifier {
   Future<int> getCartItemCount() async {
@@ -58,24 +59,25 @@ class CartProvider extends ChangeNotifier {
   Future<void> checkout() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final cartReference =
-          FirebaseFirestore.instance.collection('carts').doc(user.uid);
+      final cartItems = await getCartItems().first;
+      final products = cartItems.docs.map((doc) {
+        final cartItem = doc.data() as Map<String, dynamic>;
+        return ProductModel.fromMap(cartItem);
+      }).toList();
+      final total = calculateTotalPrice(cartItems.docs);
 
-      // Ambil semua item di keranjang
-      final cartItems = await cartReference.collection('items').get();
-      final orderData = {
-        'userId': user.uid,
-        'items': cartItems.docs.map((item) => item.data()).toList(),
-        'totalPrice': calculateTotalPrice(cartItems.docs),
-        'timestamp': FieldValue.serverTimestamp(), // Tambahkan waktu pesanan
-      };
+      final saleData = SaleModel(
+          products: products, total: total, timestamp: DateTime.now());
 
-      // Simpan data pesanan ke koleksi 'orders'
-      await FirebaseFirestore.instance.collection('orders').add(orderData);
+      await FirebaseFirestore.instance
+          .collection('sales')
+          .doc(user.uid)
+          .collection('history')
+          .add(saleData.toMap());
 
-      // Hapus semua item dari keranjang
-      for (var item in cartItems.docs) {
-        await item.reference.delete();
+      // Hapus item dari keranjang setelah checkout
+      for (var doc in cartItems.docs) {
+        await doc.reference.delete();
       }
 
       notifyListeners();
