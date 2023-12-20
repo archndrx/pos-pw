@@ -3,12 +3,14 @@ class ProductModel {
   late String name;
   late int price;
   late String file;
+  late int stock;
 
   ProductModel({
     this.id,
     required this.name,
     required this.price,
     required this.file,
+    required this.stock,
   });
 
   Map<String, dynamic> toMap() {
@@ -17,13 +19,14 @@ class ProductModel {
       'name': name,
       'price': price,
       'file': file,
+      'stock': stock
     };
   }
 
   static ProductModel fromMap(Map<String, dynamic> map) => ProductModel(
-        id: map['id'],
-        name: map['name'],
-        price: map['price'],
-        file: map['file'],
-      );
+      id: map['id'],
+      name: map['name'],
+      price: map['price'],
+      file: map['file'],
+      stock: map['stock'] ?? 0);
 }
