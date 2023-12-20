@@ -1,26 +1,30 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:point_of_sales/view/screen/auth/auth_view_model.dart';
 import 'package:point_of_sales/view/screen/auth/login/login_page.dart';
-import 'package:point_of_sales/view/screen/homepage.dart';
-import 'package:point_of_sales/view/screen/profile/profile.dart';
+
+import 'package:point_of_sales/view/screen/homescreen/homescreen_admin.dart';
+import 'package:point_of_sales/view/screen/homescreen/homescreen_kasir.dart';
+import 'package:point_of_sales/view/screen/homescreen/homescreen_pemilik.dart';
 
 class AuthTree extends StatefulWidget {
-  const AuthTree({super.key});
+  const AuthTree({Key? key}) : super(key: key);
 
   @override
   State<AuthTree> createState() => _AuthTreeState();
 }
 
 class _AuthTreeState extends State<AuthTree> {
+  final AuthProvider _authProvider = AuthProvider();
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: AuthProvider().authStateChanges,
+      stream: _authProvider.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return Center(child: const CircularProgressIndicator());
         }
 
         if (snapshot.hasData) {
@@ -31,28 +35,32 @@ class _AuthTreeState extends State<AuthTree> {
                 .get(),
             builder: (context, userSnapshot) {
               if (userSnapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
+                return Center(child: const CircularProgressIndicator());
               }
 
               if (userSnapshot.hasData) {
-                final userRole = userSnapshot.data!.get('role');
+                var userData =
+                    userSnapshot.data!.data() as Map<String, dynamic>;
+                var userRole = userData[
+                    'role']; // Gantilah 'role' dengan nama field yang sesuai di Firestore
 
                 if (userRole == 'admin') {
-                  return ProfilePage(); // Ganti dengan halaman admin
+                  return const HomescreenAdmin();
                 } else if (userRole == 'kasir') {
-                  return const HomeScreen(); // Ganti dengan halaman pengguna biasa
+                  return HomescreenKasir();
+                } else if (userRole == 'pemilik') {
+                  return const HomescreenPemilik();
                 } else {
-                  // Role tidak dikenali, batasi akses atau tampilkan pesan kesalahan
+                  // Jika peran tidak dikenali, Anda dapat mengarahkan ke halaman kesalahan atau menangani secara sesuai
                   return const LoginPage();
                 }
               } else {
-                // Dokumen pengguna tidak ditemukan
+                // Jika data pengguna tidak ditemukan di Firestore
                 return const LoginPage();
               }
             },
           );
         } else {
-          // Pengguna belum terautentikasi
           return const LoginPage();
         }
       },
