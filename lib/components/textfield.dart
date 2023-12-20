@@ -1,35 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:point_of_sales/components/textstyle.dart';
 
 class MyTextField extends StatelessWidget {
-  final controller;
-  final String hintText;
+  final TextEditingController controller;
+  final String? labelText;
   final bool obscureText;
+  final String? Function(String?)? validator; // New property for validator
 
   const MyTextField({
-    super.key,
+    Key? key,
     required this.controller,
-    required this.hintText,
+    this.labelText,
     required this.obscureText,
-  });
+    this.validator, // Added validator property
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: TextField(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: TextFormField(
         controller: controller,
         obscureText: obscureText,
+        validator: validator, // Pass the validator to TextFormField
         decoration: InputDecoration(
-            enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            borderSide: const BorderSide(
+              color: Color(0xFFDDDDDD),
+              width: 2,
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            borderSide: const BorderSide(
+              color: Color(0xFFDDDDDD),
+              width: 2,
             ),
-            fillColor: Colors.grey.shade200,
-            filled: true,
-            hintText: hintText,
-            hintStyle: TextStyle(color: Colors.grey[500])),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            borderSide: const BorderSide(
+              color: Color(0xFFDDDDDD),
+              width: 2,
+            ),
+          ),
+          labelText: labelText,
+          labelStyle: TextStyles.poppinsMedium.copyWith(
+            fontSize: 16,
+            color: Color(0xFF757575),
+          ),
+          fillColor: Colors.white,
+        ),
       ),
     );
   }
