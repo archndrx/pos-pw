@@ -44,11 +44,11 @@ class _AuthTreeState extends State<AuthTree> {
                 var userRole = userData[
                     'role']; // Gantilah 'role' dengan nama field yang sesuai di Firestore
 
-                if (userRole == 'admin') {
+                if (userRole == 'Admin') {
                   return const HomescreenAdmin();
-                } else if (userRole == 'kasir') {
+                } else if (userRole == 'Kasir') {
                   return HomescreenKasir();
-                } else if (userRole == 'pemilik') {
+                } else if (userRole == 'Pemilik') {
                   return const HomescreenPemilik();
                 } else {
                   // Jika peran tidak dikenali, Anda dapat mengarahkan ke halaman kesalahan atau menangani secara sesuai
