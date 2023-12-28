@@ -53,6 +53,20 @@ class _AddUserState extends State<AddUser> {
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: MyTextField(
+                    controller: nameController,
+                    labelText: 'Name',
+                    obscureText: false,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter name';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: MyTextField(
                     controller: emailController,
                     labelText: 'Email',
                     obscureText: false,
@@ -79,28 +93,63 @@ class _AddUserState extends State<AddUser> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: MyTextField(
-                    controller: roleController,
-                    labelText: 'Role',
-                    obscureText: false,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please enter role';
-                      }
-                      return null;
-                    },
+                  padding: const EdgeInsets.only(
+                    top: 12,
+                    left: 16,
+                    right: 16,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: MyTextField(
-                    controller: nameController,
-                    labelText: 'Name',
-                    obscureText: false,
+                  child: DropdownButtonFormField<String>(
+                    value: roleController.text.isEmpty
+                        ? null
+                        : roleController.text,
+                    items: [
+                      "Kasir",
+                      "Admin",
+                      "Pemilik"
+                    ] // Ganti dengan pilihan role yang diinginkan
+                        .map((role) {
+                      return DropdownMenuItem<String>(
+                        value: role,
+                        child: Text(role),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        roleController.text = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFDDDDDD),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFDDDDDD),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFDDDDDD),
+                          width: 2,
+                        ),
+                      ),
+                      labelText: 'Role',
+                      labelStyle: TextStyles.poppinsMedium.copyWith(
+                        fontSize: 16,
+                        color: Color(0xFF757575),
+                      ),
+                      fillColor: Colors.white,
+                    ),
                     validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please enter name';
+                      if (value == null || value.isEmpty) {
+                        return 'Please choose a role';
                       }
                       return null;
                     },
@@ -122,7 +171,7 @@ class _AddUserState extends State<AddUser> {
                     if (_formKey.currentState!.validate()) {
                       String email = emailController.text.trim();
                       String password = passwordController.text.trim();
-                      String role = roleController.text.trim().toLowerCase();
+                      String role = roleController.text.trim();
                       String name = nameController.text.trim();
                       final addDataUser = UserModel(
                           name: name,

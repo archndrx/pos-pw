@@ -91,11 +91,58 @@ class _EditUserState extends State<EditUser> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: MyTextField(
-                    controller: _roleController,
-                    obscureText: false,
-                    labelText: 'Role',
+                  padding: const EdgeInsets.only(
+                    top: 12,
+                    left: 16,
+                    right: 16,
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: _roleController.text,
+                    items: [
+                      "Kasir",
+                      "Pemilik",
+                      "Admin"
+                    ] // Replace with your actual role options
+                        .map((role) {
+                      return DropdownMenuItem<String>(
+                        value: role,
+                        child: Text(role),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _roleController.text = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFDDDDDD),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFDDDDDD),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFDDDDDD),
+                          width: 2,
+                        ),
+                      ),
+                      labelText: 'Role',
+                      labelStyle: TextStyles.poppinsMedium.copyWith(
+                        fontSize: 16,
+                        color: Color(0xFF757575),
+                      ),
+                      fillColor: Colors.white,
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -113,8 +160,7 @@ class _EditUserState extends State<EditUser> {
                     String updatedName = _nameController.text.trim();
                     String updatedEmail = _emailController.text.trim();
                     String updatedPassword = _passwordController.text.trim();
-                    String updatedRole =
-                        _roleController.text.trim().toLowerCase();
+                    String updatedRole = _roleController.text.trim();
                     final updatedData = UserModel(
                       name: updatedName,
                       email: updatedEmail,
