@@ -1,12 +1,12 @@
-import 'dart:io';
+import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:point_of_sales/components/textstyle.dart';
 import 'package:point_of_sales/model/product_model.dart';
 import 'package:point_of_sales/view/screen/cart/cart.dart';
 import 'package:point_of_sales/view/screen/cart/cart_view_model.dart';
-import 'package:point_of_sales/view/screen/product/add_product.dart';
-import 'package:point_of_sales/view/screen/product/edit_product.dart';
 import 'package:point_of_sales/view/screen/product/product_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -18,11 +18,25 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
+  String searchQuery = '';
+  Timer? _debounceTimer;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Product'),
+        backgroundColor: const Color(0xFFF87C47),
+        iconTheme: IconThemeData(
+          color: Colors.white, //change your color here
+        ),
+        title: Text(
+          'Produk',
+          style: TextStyles.interBold.copyWith(
+            fontSize: 22,
+            color: Colors.white,
+          ),
+        ),
+        automaticallyImplyLeading: false,
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -43,11 +57,11 @@ class _ProductScreenState extends State<ProductScreen> {
                   future: cartProvider.getCartItemCount(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator(); // Tampilkan indikator loading jika sedang menunggu
+                      return Container(); // Tampilkan indikator loading jika sedang menunggu
                     } else if (snapshot.hasData) {
                       final itemCount = snapshot.data;
                       return Positioned(
-                        top: 10,
+                        bottom: 20,
                         right: 10,
                         child: Container(
                           padding: const EdgeInsets.all(4),
@@ -74,150 +88,269 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
         ],
       ),
-      body: Consumer<ProductProvider>(
-        builder: (context, provider, _) {
-          return StreamBuilder<List<ProductModel>>(
-            stream: provider.getProduct(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final product = snapshot.data!;
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 16,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8,
+              horizontal: 11,
+            ),
+            child: TextField(
+              onChanged: (value) {
+                // Hapus timer sebelumnya untuk mencegah pemanggilan yang berlebihan
+                if (_debounceTimer != null) {
+                  _debounceTimer!.cancel();
+                }
+                // Membuat timer baru untuk debounce
+                _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+                  setState(() {
+                    searchQuery = value;
+                  });
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'Cari Produk...',
+                labelStyle: TextStyles.interRegular.copyWith(
+                  fontSize: 16,
+                  color: const Color(0xFF9CA3AF),
+                ),
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(8),
                   ),
-                  itemCount: product.length,
-                  itemBuilder: (context, index) {
-                    final productModel = product[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                EditProduct(data: productModel),
+                ),
+                prefixIcon: const Icon(Icons.search),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Consumer<ProductProvider>(
+              builder: (context, provider, _) {
+                return StreamBuilder<List<ProductModel>>(
+                  stream: provider.getProduct(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (snapshot.hasData) {
+                      final products = snapshot.data!;
+                      final filteredProducts = products
+                          .where((product) => product.name
+                              .toLowerCase()
+                              .contains(searchQuery.toLowerCase()))
+                          .toList();
+
+                      if (filteredProducts.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Belum ada data produk",
+                                style: TextStyles.poppinsMedium
+                                    .copyWith(fontSize: 16),
+                              ),
+                            ],
                           ),
                         );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        // margin: EdgeInsets.only(top: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color.fromARGB(255, 240, 227, 227),
+                      }
+
+                      return GridView.builder(
+                        padding:
+                            EdgeInsets.only(left: 11, right: 11, bottom: 11),
+                        physics: const BouncingScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 19,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 0.7,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Image.file(
-                                File(
-                                  productModel.file.toString(),
-                                ),
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Row(
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      productModel.name,
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Rp.${NumberFormat.decimalPattern('id_ID').format(productModel.price)}',
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Spacer(),
-                                GestureDetector(
-                                  onTap: () {
-                                    Provider.of<CartProvider>(context,
-                                            listen: false)
-                                        .addToCart(productModel);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Produk ditambahkan ke keranjang'),
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
-                                  },
-                                  child: const Icon(Icons.add_shopping_cart),
-                                ),
-                                GestureDetector(
-                                  child: const Icon(
-                                    Icons.delete,
-                                    size: 25,
-                                  ),
-                                  onTap: () {
-                                    provider.deleteData(productModel.id!);
-                                  },
+                        itemCount: filteredProducts.length,
+                        itemBuilder: (context, index) {
+                          final productModel = filteredProducts[index];
+                          bool isOutOfStock = productModel.stock == 0;
+
+                          return Container(
+                            height: 280,
+                            width: 200,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: isOutOfStock
+                                  ? const Color(0xFFF1F1F1).withOpacity(0.7)
+                                  : const Color(0xFFF1F1F1),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  spreadRadius: 2,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 200,
+                                  height: 183,
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(8),
+                                      topRight: Radius.circular(8),
+                                      bottomLeft: Radius.circular(6),
+                                      bottomRight: Radius.circular(6),
+                                    ),
+                                    child: isOutOfStock
+                                        ? Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              Image.network(
+                                                productModel.file,
+                                                fit: BoxFit
+                                                    .cover, // Atur BoxFit sesuai kebutuhan Anda
+                                              ),
+                                              ClipRRect(
+                                                child: BackdropFilter(
+                                                  filter: ImageFilter.blur(
+                                                      sigmaX: 5, sigmaY: 5),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'Stok Habis',
+                                                      style: TextStyles
+                                                          .poppinsBold
+                                                          .copyWith(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : Image.network(
+                                            productModel.file,
+                                            fit: BoxFit
+                                                .cover, // Atur BoxFit sesuai kebutuhan Anda
+                                          ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 5,
+                                    right: 9,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            productModel.name,
+                                            style: TextStyles.interBold
+                                                .copyWith(fontSize: 14),
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Text(
+                                            'Rp.${NumberFormat.decimalPattern('id_ID').format(productModel.price)}',
+                                            style: TextStyles.interRegular
+                                                .copyWith(
+                                              fontSize: 13,
+                                              color: isOutOfStock
+                                                  ? Colors.black
+                                                  : const Color(0xFFFF0000),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Text(
+                                            'Stok : ${productModel.stock}',
+                                            style: TextStyles.poppinsMedium
+                                                .copyWith(
+                                              fontSize: 12,
+                                              color: isOutOfStock
+                                                  ? Colors.black
+                                                  : const Color.fromARGB(
+                                                      255, 157, 155, 155),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (!isOutOfStock) {
+                                            Provider.of<CartProvider>(context,
+                                                    listen: false)
+                                                .addToCart(productModel);
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Produk ditambahkan ke keranjang'),
+                                                duration: Duration(seconds: 1),
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content:
+                                                    Text('Stok produk habis'),
+                                                duration: Duration(seconds: 1),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: isOutOfStock
+                                            ? Container()
+                                            : Image.asset(
+                                                'assets/icon/addProduct.png',
+                                                width: 40,
+                                                height: 40,
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 8),
+                            Text(
+                              "Memuat data...",
+                              style: TextStyles.poppinsMedium
+                                  .copyWith(fontSize: 16),
+                            ),
                           ],
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                 );
-              } else {
-                return const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Belum ada data"),
-                    ],
-                  ),
-                );
-              }
-            },
-          );
-        },
-      ),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.miniCenterFloat,
-      floatingActionButton: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: ((context) => const AddProduct()),
+              },
             ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
           ),
-          backgroundColor: Colors.blue,
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        ),
-        child: const Text(
-          'Add Product',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
-        ),
+        ],
       ),
     );
   }
