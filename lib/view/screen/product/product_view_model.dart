@@ -7,9 +7,11 @@ class ProductProvider extends ChangeNotifier {
       .collection("product")
       .orderBy("name")
       .snapshots()
-      .map((snapshot) => snapshot.docs
-          .map((doc) => ProductModel.fromMap(doc.data()))
-          .toList());
+      .map(
+        (snapshot) => snapshot.docs
+            .map((doc) => ProductModel.fromMap(doc.data()))
+            .toList(),
+      );
 
   Future<void> addProduct(ProductModel product) async {
     final docProd = FirebaseFirestore.instance.collection('product').doc();
