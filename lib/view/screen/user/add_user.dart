@@ -182,27 +182,51 @@ class _AddUserState extends State<AddUser> {
                         setState(() {
                           isLoading = true;
                         });
-                        await userProvider.addData(addDataUser);
-                        ElegantNotification.success(
-                          title: Text(
-                            'Success',
-                            style: TextStyles.interRegular.copyWith(
-                              color: Colors.white,
+                        final existingUsers = await userProvider.getUsers();
+                        bool emailExists = existingUsers
+                            .any((existingUser) => existingUser.email == email);
+                        if (emailExists) {
+                          ElegantNotification.info(
+                            title: Text(
+                              'Alert',
+                              style: TextStyles.interRegular.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          description: Text(
-                            "Tambah Data Berhasil",
-                            style: TextStyles.interRegular.copyWith(
-                              color: Colors.white,
+                            description: Text(
+                              "Email Sudah Digunakan Pengguna Lain",
+                              style: TextStyles.interRegular.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          animation: AnimationType.fromBottom,
-                          background: Color.fromARGB(181, 248, 124, 71),
-                          toastDuration: Duration(seconds: 2),
-                          notificationPosition: NotificationPosition.center,
-                        ).show(context);
-                        await Future.delayed(Duration(seconds: 2));
-                        Navigator.pop(context);
+                            animation: AnimationType.fromBottom,
+                            background: Color.fromARGB(181, 248, 124, 71),
+                            toastDuration: Duration(seconds: 2),
+                            notificationPosition: NotificationPosition.center,
+                          ).show(context);
+                        } else {
+                          await userProvider.addData(addDataUser);
+                          ElegantNotification.success(
+                            title: Text(
+                              'Success',
+                              style: TextStyles.interRegular.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            description: Text(
+                              "Tambah Data Berhasil",
+                              style: TextStyles.interRegular.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            animation: AnimationType.fromBottom,
+                            background: Color.fromARGB(181, 248, 124, 71),
+                            toastDuration: Duration(seconds: 2),
+                            notificationPosition: NotificationPosition.center,
+                          ).show(context);
+                          await Future.delayed(Duration(seconds: 2));
+                          Navigator.pop(context);
+                        }
                       } catch (error) {
                         ElegantNotification.error(
                           title: Text(
@@ -217,10 +241,16 @@ class _AddUserState extends State<AddUser> {
                               color: Colors.white,
                             ),
                           ),
-                          toastDuration: Duration(seconds: 2),
                           animation: AnimationType.fromBottom,
+                          background: Color.fromARGB(181, 248, 124, 71),
+                          toastDuration: Duration(seconds: 2),
                           notificationPosition: NotificationPosition.center,
                         ).show(context);
+                      } finally {
+                        // Ensure isLoading is set back to false in all scenarios
+                        setState(() {
+                          isLoading = false;
+                        });
                       }
                     }
                   },

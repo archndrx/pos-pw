@@ -36,21 +36,17 @@ class CartProvider extends ChangeNotifier {
           final cartReference =
               FirebaseFirestore.instance.collection('carts').doc(user.uid);
           final json = product.toMap();
-
-          // Check if the product is already in the cart
           final QuerySnapshot querySnapshot = await cartReference
               .collection('items')
               .where('id', isEqualTo: product.id)
               .get();
 
           if (querySnapshot.docs.isNotEmpty) {
-            // Product is already in the cart, update the quantity
             final existingCartItem = querySnapshot.docs.first;
             final existingQuantity = existingCartItem['quantity'] ?? 0;
             await existingCartItem.reference
                 .update({'quantity': existingQuantity + 1});
           } else {
-            // Product is not in the cart, add a new item with quantity 1
             await cartReference.collection('items').add({
               ...json,
               'quantity': 1, // Initial quantity for a new item
@@ -59,8 +55,6 @@ class CartProvider extends ChangeNotifier {
 
           notifyListeners();
         } else {
-          // Handle case where stock is empty
-          // You can show an error message or take any other action
           print('Product is out of stock');
         }
       }
